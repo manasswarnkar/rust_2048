@@ -1,11 +1,13 @@
+use std::io;
+
 use rand::Rng;
 struct GameBoard {
-     board : [[usize;4]; 4],
+    board: [[usize; 4]; 4],
 }
 
 impl GameBoard {
-    fn new() -> GameBoard{
-        return GameBoard { board : [[0; 4]; 4]};
+    fn new() -> GameBoard {
+        return GameBoard { board: [[0; 4]; 4] };
     }
 
     fn display(&self) {
@@ -18,18 +20,22 @@ impl GameBoard {
         println!("----------");
     }
 
-    fn generate_new_tile(&mut self) {
-        let mut empty:Vec<[usize;2]> = Vec::new();
+    fn generate_new_tile(&mut self) -> Option<i32> {
+        let mut empty: Vec<[usize; 2]> = Vec::new();
         for i in 0..4 {
             for j in 0..4 {
                 if self.board[i][j] == 0 {
                     empty.push([i, j]);
-                } 
+                }
             }
         }
-        
+
         if empty.is_empty() {
-            return;
+            if self.is_game_over() {
+                return Some(-1);
+            } else {
+                return Some(0);
+            }
         }
 
         let mut rng = rand::thread_rng();
@@ -39,13 +45,13 @@ impl GameBoard {
         let row = empty[rand_index][0];
         let col = empty[rand_index][1];
 
-        let new_tile = if (rng.gen::<u32>() % 10) < 9 {2} else {4};
+        let new_tile = if (rng.gen::<u32>() % 10) < 9 { 2 } else { 4 };
 
         self.board[row][col] = new_tile;
-
+        None
     }
 
-    fn is_win(&self) -> bool {
+    pub fn is_win(&self) -> bool {
         for i in 0..4 {
             for j in 0..4 {
                 if self.board[i][j] == 2048 {
@@ -56,28 +62,132 @@ impl GameBoard {
 
         return false;
     }
-    
-    
-    // yet to implement
-    fn _merge_tiles() {
-    }
-    fn _handle_input() {
-    }
-    fn _is_game_over(&self) -> bool {
-        return false;
-    }
 
+    // yet to implement
+    pub fn merge_tiles(&mut self, input: &str) {
+        if input == "w" {
+            for i in 1..4 {
+                for j in 0..4 {
+                    if self.board[i][j] != 0 {
+                        let mut x = i - 1;
+                        while self.board[x][j] == 0 {
+                            self.board[x][j] = self.board[x + 1][j];
+                            self.board[x + 1][j] = 0;
+                            if x != 0 {
+                                x -= 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                        if self.board[x][j] == self.board[x + 1][j] {
+                            self.board[x][j] *= 2;
+                            self.board[x + 1][j] = 0;
+                        }
+                    }
+                }
+            }
+        } else if input == "a" {
+            for i in 0..4 {
+                for j in 1..4 {
+                    if self.board[i][j] != 0 {
+                        let mut x = j - 1;
+                        while self.board[i][x] == 0 {
+                            self.board[i][x] = self.board[i][x+1];
+                            self.board[i][x+1] = 0;
+                            if x != 0 {
+                                x -= 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        if self.board[i][x] == self.board[i][x+1] {
+                            self.board[i][x] *= 2;
+                            self.board[i][x+1] = 0;
+                        }
+                    }
+                }
+            }
+        } else if input == "s" {
+            for i in 3..0 {
+                for j in 0..4 {
+                    if self.board[i][j] != 0 {
+                        let mut x = i + 1;
+                        while self.board[x][j] == 0 {
+                            self.board[x][j] = self.board[x-1][j];
+                            self.board[x-1][j] = 0;
+                            if x != 3 {
+                                x += 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        if self.board[x][j] == self.board[x-1][j] {
+                            self.board[x][j] *= 2;
+                            self.board[x-1][j] = 0;
+                        }
+                    }
+                }
+            }
+        } else if input == "d" {
+            for i in 0..4 {
+                for j in 3..0 {
+                    if self.board[i][j] != 0 {
+                        let mut x = j + 1;
+                        while self.board[i][x] == 0 {
+                            self.board[i][x] = self.board[i][x-1];
+                            self.board[i][x-1] = 0;
+                            if x != 3 {
+                                x += 1;
+                            } else {
+                                break;
+                            }
+                        }
+                        if self.board[i][x] == self.board[i][x-1] {
+                            self.board[i][x] *= 2;
+                            self.board[i][x-1] = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    fn is_game_over(&self) -> bool {
+        for i in 1..3 {
+            for j in 1..3 {
+                if self.board[i][j] == self.board[i][j - 1]
+                    || self.board[i][j] == self.board[i][j + 1]
+                    || self.board[i][j] == self.board[i + 1][j]
+                    || self.board[i][j] == self.board[i - 1][j]
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
 
 fn main() {
-    let mut b = GameBoard::new();  
+    let mut b = GameBoard::new();
+    b.generate_new_tile();
+    b.generate_new_tile();
     loop {
         b.display();
-        if b.is_win() { 
+        if b.is_win() {
             println!("You win!");
-            break; 
+            break;
         }
-        b.generate_new_tile();
-        b.board[0][0] = 2048;
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("failed to get input");
+        let input = input.trim();
+        b.merge_tiles(input);
+        let a = b.generate_new_tile();
+        if a != None && a.unwrap() == -1 {
+            println!("You lose!");
+            break;
+        }
     }
 }
