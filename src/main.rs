@@ -1,5 +1,4 @@
 use std::io;
-
 use rand::Rng;
 struct GameBoard {
     board: [[usize; 4]; 4],
