@@ -11,9 +11,12 @@ impl GameBoard {
     }
 
     fn display(&self) {
+        println!("----------");
         for i in self.board.iter() {
             for j in i.iter() {
-                print!("{} ", j);
+                let len = j.clone().to_string().len();
+                let space = " ".repeat(6 - len);
+                print!("{}{}", j, space);
             }
             println!();
         }
@@ -109,43 +112,43 @@ impl GameBoard {
                 }
             }
         } else if input == "s" {
-            for i in 3..0 {
+            for i in (0..=2).rev()  {
                 for j in 0..4 {
                     if self.board[i][j] != 0 {
-                        let mut x = i + 1;
-                        while self.board[x][j] == 0 {
-                            self.board[x][j] = self.board[x-1][j];
-                            self.board[x-1][j] = 0;
-                            if x != 3 {
+                        let mut x = i;
+                        while self.board[x+1][j] == 0 {
+                            self.board[x+1][j] = self.board[x][j];
+                            self.board[x][j] = 0;
+                            if x != 2 {
                                 x += 1;
                             } else {
                                 break;
                             }
                         }
-                        if self.board[x][j] == self.board[x-1][j] {
-                            self.board[x][j] *= 2;
-                            self.board[x-1][j] = 0;
+                        if self.board[x+1][j] == self.board[x][j] {
+                            self.board[x+1][j] *= 2;
+                            self.board[x][j] = 0;
                         }
                     }
                 }
             }
         } else if input == "d" {
             for i in 0..4 {
-                for j in 3..0 {
+                for j in (0..=2).rev() {
                     if self.board[i][j] != 0 {
-                        let mut x = j + 1;
-                        while self.board[i][x] == 0 {
-                            self.board[i][x] = self.board[i][x-1];
-                            self.board[i][x-1] = 0;
-                            if x != 3 {
+                        let mut x = j;
+                        while self.board[i][x+1] == 0 {
+                            self.board[i][x+1] = self.board[i][x];
+                            self.board[i][x] = 0;
+                            if x != 2 {
                                 x += 1;
                             } else {
                                 break;
                             }
                         }
-                        if self.board[i][x] == self.board[i][x-1] {
-                            self.board[i][x] *= 2;
-                            self.board[i][x-1] = 0;
+                        if self.board[i][x+1] == self.board[i][x] {
+                            self.board[i][x+1] *= 2;
+                            self.board[i][x] = 0;
                         }
                     }
                 }
